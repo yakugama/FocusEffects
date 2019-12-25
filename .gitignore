@@ -259,3 +259,12 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
+
+#Images
+Images
+
+#Stuff for dnn
+colors.txt
+mask_rcnn_inception_v2_coco_2018_01_28.pbtxt
+mscoco_labels.names
+mask_rcnn_inception_v2_coco_2018_01_28
