@@ -12,58 +12,23 @@ using namespace cv;
 using namespace dnn;
 using namespace std;
 
-// Initialize the parameters
-float confThreshold = 0.5; // Confidence threshold
-float maskThreshold = 0.3; // Mask threshold
-
-vector<string> classes;
-vector<Scalar> colors;
-
-Mat processImage(string inputFile)
+void DNN::processImage(string inputFile)
 {
 	string outputFile(inputFile);
 	outputFile.replace(outputFile.find("."), outputFile.length(), "_proccessed.jpg");
 
-	Mat image = imread(inputFile, IMREAD_COLOR);
-	if (image.empty())
+	processedImage = imread(inputFile, IMREAD_COLOR);
+	if (processedImage.empty())
 	{
 		std::cout << "Could not open or find the image" << std::endl;
 	}
-	Mat imageCopy;
-	image.copyTo(imageCopy);
+	//Mat imageCopy;
+	//image.copyTo(imageCopy);
 
-    // Load names of classes
-    string classesFile = "mscoco_labels.names";
-    ifstream ifs(classesFile.c_str());
-    string line;
-    while (getline(ifs, line)) classes.push_back(line);
-    
-    // Load the colors
-    string colorsFile = "colors.txt";
-    ifstream colorFptr(colorsFile.c_str());
-    while (getline(colorFptr, line)) {
-        char* pEnd;
-        double r, g, b;
-        r = strtod (line.c_str(), &pEnd);
-        g = strtod (pEnd, &pEnd);
-        b = strtod (pEnd, NULL);
-        Scalar color = Scalar(r, g, b, 255.0);
-        colors.push_back(Scalar(r, g, b, 255.0));
-    }
-
-    // Give the configuration and weight files for the model
-    String textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt";
-    String modelWeights = "./mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb";
-
-    // Load the network
-    Net net = readNetFromTensorflow(modelWeights, textGraph);
-    net.setPreferableBackend(DNN_BACKEND_OPENCV);
-    net.setPreferableTarget(DNN_TARGET_CPU);
-
-    // Process frames.
-    // Create a 4D blob from a frame.
+    // Process imagee.
+    // Create a 4D blob from an image.
 	Mat blob;
-    blobFromImage(image, blob, 1.0, Size(image.cols, image.rows), Scalar(), true, false);
+    blobFromImage(processedImage, blob, 1.0, Size(processedImage.cols, processedImage.rows), Scalar(), true, false);
     //blobFromImage(frame, blob);
         
     //Sets the input to the network
@@ -73,15 +38,15 @@ Mat processImage(string inputFile)
     std::vector<String> outNames(2);
     outNames[0] = "detection_out_final";
     outNames[1] = "detection_masks";
-    vector<Mat> outs;
+    //vector<Mat> outs;
     net.forward(outs, outNames);
         
     // Extract the bounding box and mask for each of the detected objects
-    postprocess(image, outs);
+    postprocess(processedImage, outs);
         
     // Write the frame with the detection boxes
-    Mat detectedFrame;
-    image.convertTo(detectedFrame, CV_8U);
+    //Mat detectedFrame;
+    //image.convertTo(detectedFrame, CV_8U);
     //imshow(kWinName, image);
 
 	/*Mat edges(image.rows, image.cols,CV_8UC1, Scalar(0));
@@ -91,11 +56,15 @@ Mat processImage(string inputFile)
 	Canny(imageCopy, edges, 100, 255);
 	imshow("My contours", edges);
 	waitKey();*/
-	return image;
+}
+
+cv::Mat & DNN::getProcessedImage()
+{
+	return processedImage;
 }
 
 // For each frame, extract the bounding box and mask for each detected object
-void postprocess(Mat& frame, const vector<Mat>& outs)
+void DNN::postprocess(Mat& frame, const vector<Mat>& outs)
 {
     Mat outDetections = outs[0];
     Mat outMasks = outs[1];
@@ -142,7 +111,7 @@ void postprocess(Mat& frame, const vector<Mat>& outs)
 }
 
 // Draw the predicted bounding box, colorize and show the mask on the image
-void drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask)
+void DNN::drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask)
 {
     //Draw a rectangle displaying the bounding box
    // rectangle(frame, Point(box.x, box.y), Point(box.x+box.width, box.y+box.height), Scalar(255, 178, 50), 3);
@@ -178,4 +147,41 @@ void drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask)
     drawContours(coloredRoi, contours, -1, color, 5, LINE_8, hierarchy, 100);
     coloredRoi.copyTo(frame(box), mask);
 
+}
+
+DNN::DNN()
+{
+	// Load names of classes
+	string classesFile = "mscoco_labels.names";
+	ifstream ifs(classesFile.c_str());
+	string line;
+	while (getline(ifs, line)) classes.push_back(line);
+
+	// Load the colors
+	string colorsFile = "colors.txt";
+	ifstream colorFptr(colorsFile.c_str());
+	while (getline(colorFptr, line)) {
+		char* pEnd;
+		double r, g, b;
+		r = strtod(line.c_str(), &pEnd);
+		g = strtod(pEnd, &pEnd);
+		b = strtod(pEnd, NULL);
+		Scalar color = Scalar(r, g, b, 255.0);
+		colors.push_back(Scalar(r, g, b, 255.0));
+	}
+
+	// Give the configuration and weight files for the model
+	String textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt";
+	String modelWeights = "./mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb";
+
+	// Load the network
+	net = readNetFromTensorflow(modelWeights, textGraph);
+	net.setPreferableBackend(DNN_BACKEND_OPENCV);
+	net.setPreferableTarget(DNN_TARGET_CPU);
+}
+
+DNN& DNN::getInstance()
+{
+	static DNN instance;
+	return instance;
 }

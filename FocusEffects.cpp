@@ -15,7 +15,8 @@ void FocusEffects::loadImage_clicked()
 
 	if (filename.size())
 	{
-		cv::Mat proccesedImage = processImage(filename.toStdString());
+		DNN::getInstance().processImage(filename.toStdString());
+		cv::Mat proccesedImage = DNN::getInstance().getProcessedImage();
 		cv::cvtColor(proccesedImage, proccesedImage, cv::COLOR_BGR2RGB);
 		QPixmap image = QPixmap::fromImage(QImage((unsigned char*)proccesedImage.data, proccesedImage.cols, proccesedImage.rows,proccesedImage.step, QImage::Format_RGB888));
 		ui.imageArea->setPixmap(image);
