@@ -5,14 +5,8 @@
 
 // Usage example:  ./mask_rcnn.out --video=run.mp4
 //                 ./mask_rcnn.out --image=bird.jpg
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <cstring>
 
-#include <opencv2/dnn.hpp>
-#include <opencv2/imgproc.hpp>
-#include <opencv2/highgui.hpp>
+#include "mask_rcnn.h"
 
 using namespace cv;
 using namespace dnn;
@@ -25,16 +19,8 @@ float maskThreshold = 0.3; // Mask threshold
 vector<string> classes;
 vector<Scalar> colors;
 
-
-// Draw the predicted bounding box
-void drawBox(Mat& frame, int classId, float conf, Rect box, Mat& objectMask);
-
-// Postprocess the neural network's output for each frame
-void postprocess(Mat& frame, const vector<Mat>& outs);
-
-int main(int argc, char** argv)
+Mat processImage(string inputFile)
 {
-	string inputFile = "Images/couple.jpg";
 	string outputFile(inputFile);
 	outputFile.replace(outputFile.find("."), outputFile.length(), "_proccessed.jpg");
 
@@ -42,11 +28,9 @@ int main(int argc, char** argv)
 	if (image.empty())
 	{
 		std::cout << "Could not open or find the image" << std::endl;
-		return -1;
 	}
 	Mat imageCopy;
 	image.copyTo(imageCopy);
-
 
     // Load names of classes
     string classesFile = "mscoco_labels.names";
@@ -76,10 +60,6 @@ int main(int argc, char** argv)
     net.setPreferableBackend(DNN_BACKEND_OPENCV);
     net.setPreferableTarget(DNN_TARGET_CPU);
 
-    // Create a window
-    static const string kWinName = "Deep learning object detection in OpenCV";
-    namedWindow(kWinName, WINDOW_NORMAL);
-
     // Process frames.
     // Create a 4D blob from a frame.
 	Mat blob;
@@ -102,18 +82,16 @@ int main(int argc, char** argv)
     // Write the frame with the detection boxes
     Mat detectedFrame;
     image.convertTo(detectedFrame, CV_8U);
-    imshow(kWinName, image);
+    //imshow(kWinName, image);
 
-	
-
-	Mat edges(image.rows, image.cols,CV_8UC1, Scalar(0));
+	/*Mat edges(image.rows, image.cols,CV_8UC1, Scalar(0));
 	Mat hierarchy;
 	Mat gray;
 	cvtColor(imageCopy, gray, COLOR_BGR2GRAY);
 	Canny(imageCopy, edges, 100, 255);
 	imshow("My contours", edges);
-	waitKey();
-    return 0;
+	waitKey();*/
+	return image;
 }
 
 // For each frame, extract the bounding box and mask for each detected object

@@ -31,6 +31,9 @@
     <ClCompile Include="FocusEffects.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mask_rcnn.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FocusEffects.h">
@@ -46,5 +49,10 @@
     <QtRcc Include="FocusEffects.qrc">
       <Filter>Resource Files</Filter>
     </QtRcc>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mask_rcnn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

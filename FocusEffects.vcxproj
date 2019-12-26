@@ -95,6 +95,7 @@
   <ItemGroup>
     <ClCompile Include="FocusEffects.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="mask_rcnn.cpp" />
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FocusEffects.h" />
@@ -104,6 +105,9 @@
   </ItemGroup>
   <ItemGroup>
     <QtRcc Include="FocusEffects.qrc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="mask_rcnn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Condition="Exists('$(QtMsBuild)\qt.targets')">
