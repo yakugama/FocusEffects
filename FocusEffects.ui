@@ -10,21 +10,36 @@
     <height>768</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>FocusEffects</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QLabel" name="imageArea">
+   <widget class="ImageViewer" name="imageArea">
     <property name="geometry">
      <rect>
       <x>30</x>
       <y>50</y>
       <width>981</width>
-      <height>661</height>
+      <height>657</height>
      </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
     </property>
     <property name="text">
      <string/>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
     </property>
    </widget>
    <widget class="QPushButton" name="loadImage">
@@ -38,6 +53,19 @@
     </property>
     <property name="text">
      <string>load Image</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="processButton">
+    <property name="geometry">
+     <rect>
+      <x>1180</x>
+      <y>120</y>
+      <width>75</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>process</string>
     </property>
    </widget>
   </widget>
@@ -62,6 +90,13 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>ImageViewer</class>
+   <extends>QLabel</extends>
+   <header>ImageViewer.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="FocusEffects.qrc"/>
  </resources>

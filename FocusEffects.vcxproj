@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="FocusEffects.cpp" />
+    <ClCompile Include="ImageViewer.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mask_rcnn.cpp" />
   </ItemGroup>
@@ -107,6 +108,7 @@
     <QtRcc Include="FocusEffects.qrc" />
   </ItemGroup>
   <ItemGroup>
+    <QtMoc Include="ImageViewer.h" />
     <ClInclude Include="mask_rcnn.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

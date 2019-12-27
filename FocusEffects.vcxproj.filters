@@ -34,9 +34,15 @@
     <ClCompile Include="mask_rcnn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImageViewer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <QtMoc Include="FocusEffects.h">
+      <Filter>Header Files</Filter>
+    </QtMoc>
+    <QtMoc Include="ImageViewer.h">
       <Filter>Header Files</Filter>
     </QtMoc>
   </ItemGroup>

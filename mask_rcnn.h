@@ -10,7 +10,7 @@
 
 class DNN{
 private:
-	float confThreshold = 0.5; // Confidence threshold
+	float confThreshold = 0.7; // Confidence threshold
 	float maskThreshold = 0.3; // Mask threshold
 
 	std::vector<std::string> classes;
@@ -18,24 +18,33 @@ private:
 	
 	cv::dnn::Net net;
 	std::vector<cv::Mat> outs;
+	std::vector<cv::Mat> masks;
+	std::vector<cv::Rect> boxes;
+	std::vector<cv::Point> referencePoints;
 
-	cv::Mat processedImage;
+	cv::Mat image;
+	cv::Mat crop;
+	cv::Rect selectedArea;
 
 	//Default constructor
 	DNN();
 
 	// Draw the predicted mask
-	void drawBox(cv::Mat& frame, int classId, float conf, cv::Rect box, cv::Mat& objectMask);
+	void drawMasks();
 
 	// Postprocess the neural network's output
-	void postprocess(cv::Mat& frame, const std::vector<cv::Mat>& outs);
+	void postprocess();
 
 public:
 	static DNN& getInstance();
 	DNN(DNN const&) = delete;
 	void operator=(DNN const&) = delete;
 
-	//Feed the image to dnn
-	void processImage(std::string inputFile);
+	//Set image 
+	void setImage(std::string filename);
+
+	//Feed the image
+	void processImage(cv::Rect);
+
 	cv::Mat& getProcessedImage();
 };
