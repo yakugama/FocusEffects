@@ -23,25 +23,6 @@ bool fileExists(const char *filename) {
 
 DNN::DNN()
 {
-	// Load names of classes
-	string classesFile = "mscoco_labels.names";
-	ifstream ifs(classesFile.c_str());
-	string line;
-	while (getline(ifs, line)) classes.push_back(line);
-
-	// Load the colors
-	string colorsFile = "colors.txt";
-	ifstream colorFptr(colorsFile.c_str());
-	while (getline(colorFptr, line)) {
-		char* pEnd;
-		double r, g, b;
-		r = strtod(line.c_str(), &pEnd);
-		g = strtod(pEnd, &pEnd);
-		b = strtod(pEnd, NULL);
-		Scalar color = Scalar(r, g, b, 255.0);
-		colors.push_back(Scalar(r, g, b, 255.0));
-	}
-
 	// Give the configuration and weight files for the model
 	String textGraph = "./mask_rcnn_inception_v2_coco_2018_01_28.pbtxt";
 	String modelWeights = "./mask_rcnn_inception_v2_coco_2018_01_28/frozen_inference_graph.pb";
@@ -77,6 +58,8 @@ void DNN::setImage(std::string filename)
 	{
 		std::cout << "Could not open or find the image" << std::endl;
 	}
+	
+	combinedMask = Mat(image.size(), CV_8UC1, Scalar(0));
 }
 
 void DNN::processImage(Rect rect)
@@ -84,7 +67,7 @@ void DNN::processImage(Rect rect)
     //Process image.
     //Create a 4D blob from an image.
 	selectedArea = rect;
-	crop = image(selectedArea);
+	Mat crop = image(selectedArea);
 	//imshow("cropped", crop);
 
 	Mat blob;
@@ -97,16 +80,21 @@ void DNN::processImage(Rect rect)
     std::vector<String> outNames(2);
     outNames[0] = "detection_out_final";
     outNames[1] = "detection_masks";
+	vector<Mat> outs;
     net.forward(outs, outNames);
         
     // Extract the bounding box and mask for each of the detected objects
-    postprocess();
-	drawMasks();
+    postprocess(outs);
 }
 
 // For each frame, extract the bounding box and mask for each detected object
-void DNN::postprocess()
+void DNN::postprocess(const vector<Mat>& outs)
 {
+	int elementSizeX = selectedArea.width % 2 == 0 ? selectedArea.width / 20 + 1 : selectedArea.width / 20;
+	int elementSizeY = selectedArea.height % 2 == 0 ? selectedArea.height / 20 + 1 : selectedArea.height / 20;
+
+	Mat dilatationElement = getStructuringElement(MORPH_ELLIPSE, Size(elementSizeX, elementSizeY), Point(elementSizeX / 2, elementSizeY / 2));
+
     Mat outDetections = outs[0];
     Mat outMasks = outs[1];
     
@@ -131,50 +119,75 @@ void DNN::postprocess()
         {
             // Extract the bounding box
             int classId = static_cast<int>(outDetections.at<float>(i, 1));
-            int left = static_cast<int>(crop.cols * outDetections.at<float>(i, 3));
-            int top = static_cast<int>(crop.rows * outDetections.at<float>(i, 4));
-            int right = static_cast<int>(crop.cols * outDetections.at<float>(i, 5));
-            int bottom = static_cast<int>(crop.rows * outDetections.at<float>(i, 6));
+            int left = static_cast<int>(selectedArea.width * outDetections.at<float>(i, 3));
+            int top = static_cast<int>(selectedArea.height * outDetections.at<float>(i, 4));
+            int right = static_cast<int>(selectedArea.width * outDetections.at<float>(i, 5));
+            int bottom = static_cast<int>(selectedArea.height * outDetections.at<float>(i, 6));
             
-            left = max(0, min(left, crop.cols - 1));
-            top = max(0, min(top, crop.rows - 1));
-            right = max(0, min(right, crop.cols - 1));
-            bottom = max(0, min(bottom, crop.rows - 1));
+            left = max(0, min(left, selectedArea.width - 1));
+            top = max(0, min(top, selectedArea.height - 1));
+            right = max(0, min(right, selectedArea.width - 1));
+            bottom = max(0, min(bottom, selectedArea.height - 1));
 			Rect box = Rect(left+selectedArea.x, top+selectedArea.y, right - left + 1, bottom - top + 1);
-            boxes.push_back(box);
             
-            // Extract the mask for the objec
+            // Extract the mask for the object
 			Mat objectMask(outMasks.size[2], outMasks.size[3], CV_32F, outMasks.ptr<float>(i, classId));
 			objectMask.convertTo(objectMask, CV_8UC3);
 			resize(objectMask, objectMask, Size(box.width, box.height));
 			Mat mask = (objectMask > maskThreshold);
-            masks.push_back(mask);
+			dilate(mask, mask, dilatationElement);
+
+			mask.copyTo(combinedMask(box), mask);
         }
     }
 }
 
 // Draw the predicted bounding box, colorize and show the mask on the image
-void DNN::drawMasks()
+//void DNN::drawMasks()
+//{
+//	Mat result(image.rows, image.cols, image.type(), Scalar(0));
+//	
+//	for (int i = 0; i < masks.size(); ++i)
+//	{
+//		Mat coloredRoi = image(boxes[i]);
+//		coloredRoi.convertTo(coloredRoi, CV_8UC3);
+//		coloredRoi.copyTo(result(boxes[i]), masks[i]);
+//		//masks[i].copyTo(result(boxes[i])); pt masca alb-negru
+//	}
+//
+//	image = result;
+//}
+
+
+Mat showSelection(cv::Mat& image, cv::Mat & mask) 
 {
-	Mat result(image.rows, image.cols, image.type(), Scalar(0));
-	Scalar color(155, 178, 13);
-	
-	Mat dilatationElement = getStructuringElement(MORPH_ELLIPSE, Size(21, 21), Point(10, 10));
-	for (int i = 0; i < masks.size(); ++i)
-	{
-		Mat coloredRoi = image(boxes[i]);
-		coloredRoi.convertTo(coloredRoi, CV_8UC3);
+	Mat result;
+	image.copyTo(result);
+	Scalar color(185, 40, 40);
 
+	Mat coloredRoi = 0.8*image + 0.2*color;
+	coloredRoi.convertTo(coloredRoi, image.type());
+	coloredRoi.copyTo(result, mask);
 
-		dilate(masks[i], masks[i], dilatationElement);
-
-		coloredRoi.copyTo(result(boxes[i]), masks[i]);
-	}
-	image = result;
+	return result;
 }
 
-cv::Mat & DNN::getProcessedImage()
+void addSelection(cv::Point seed, cv::Mat & mask, cv::Mat image)
 {
-	return image;
+	Mat canny;
+	Mat cannyCopy;
+	Canny(image, canny, 100, 255);
+	canny.copyTo(cannyCopy);
+
+	copyMakeBorder(canny, canny, 1, 1, 1, 1, BORDER_CONSTANT, 0);
+	floodFill(image, canny, seed, 255, 0, Scalar(40, 40, 40), Scalar(40, 40, 40), 8 | (255<<8) | FLOODFILL_MASK_ONLY | FLOODFILL_FIXED_RANGE);
+	canny = canny(Rect(1, 1, canny.cols - 2, canny.rows - 2));
+
+	Mat temp(canny.size(), CV_8UC1, Scalar(0));
+	canny.copyTo(temp, (255 - cannyCopy));
+	temp.copyTo(mask, temp);
 }
 
+void subSelection(cv::Point, cv::Mat & mask, cv::Mat & image)
+{
+}

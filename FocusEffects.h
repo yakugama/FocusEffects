@@ -24,9 +24,12 @@ private:
 	QPoint point1;
 	QPoint point2;
 	int timesClicked = 0;
+	int clickType = 0; //0-click normal, 1 - addSelection, 2 - subSelection
 
 private slots:
 	void loadImage_clicked();
 	void processButton_clicked();
+	void addSelectionButton_clicked();
+	void subSelectionButton_clicked();
 	void imageArea_clicked(QMouseEvent *ev);
 };
