@@ -172,22 +172,31 @@ Mat showSelection(cv::Mat& image, cv::Mat & mask)
 	return result;
 }
 
-void addSelection(cv::Point seed, cv::Mat & mask, cv::Mat image)
+void addSelection(cv::Point seed, cv::Mat & mask, cv::Mat& image)
 {
-	Mat canny;
-	Mat cannyCopy;
-	Canny(image, canny, 100, 255);
-	canny.copyTo(cannyCopy);
+	if (mask.at<uchar>(seed) == 0)
+	{
+		Mat temp(image.size(), CV_8UC1, Scalar(0));
+		copyMakeBorder(temp, temp, 1, 1, 1, 1, BORDER_CONSTANT, Scalar(0));
 
-	copyMakeBorder(canny, canny, 1, 1, 1, 1, BORDER_CONSTANT, 0);
-	floodFill(image, canny, seed, 255, 0, Scalar(40, 40, 40), Scalar(40, 40, 40), 8 | (255<<8) | FLOODFILL_MASK_ONLY | FLOODFILL_FIXED_RANGE);
-	canny = canny(Rect(1, 1, canny.cols - 2, canny.rows - 2));
-
-	Mat temp(canny.size(), CV_8UC1, Scalar(0));
-	canny.copyTo(temp, (255 - cannyCopy));
-	temp.copyTo(mask, temp);
+		floodFill(image, temp, seed, 255, 0, Scalar(5, 5, 5), Scalar(5, 5, 5), 8 | (255 << 8) | FLOODFILL_MASK_ONLY);
+		temp = temp(Rect(1, 1, temp.cols - 2, temp.rows - 2));
+		temp.copyTo(mask, temp);
+	}
 }
 
-void subSelection(cv::Point, cv::Mat & mask, cv::Mat & image)
+void subSelection(cv::Point seed, cv::Mat & mask, cv::Mat & image)
 {
+	if (mask.at<uchar>(seed) == 255)
+	{
+		Mat temp(image.size(), CV_8UC1, Scalar(0));
+		copyMakeBorder(temp, temp, 1, 1, 1, 1, BORDER_CONSTANT, Scalar(0));
+
+		floodFill(image, temp, seed, 255, 0, Scalar(5, 5, 5), Scalar(5, 5, 5), 8 | (255 << 8) | FLOODFILL_MASK_ONLY);
+		temp = temp(Rect(1, 1, temp.cols - 2, temp.rows - 2));
+
+		bitwise_not(temp, temp);
+		mask = mask & temp;
+		bitwise_and(mask, temp, mask, temp);
+	}
 }

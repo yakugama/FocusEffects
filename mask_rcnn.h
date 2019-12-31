@@ -38,5 +38,5 @@ public:
 };
 
 cv::Mat showSelection(cv::Mat& image, cv::Mat& mask);
-void addSelection(cv::Point, cv::Mat& mask, cv::Mat image);
-void subSelection(cv::Point, cv::Mat& mask, cv::Mat& image);
+void addSelection(cv::Point seed, cv::Mat& mask, cv::Mat& image);
+void subSelection(cv::Point seed, cv::Mat& mask, cv::Mat& image);

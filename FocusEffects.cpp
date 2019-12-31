@@ -70,7 +70,13 @@ void FocusEffects::imageArea_clicked(QMouseEvent* ev)
 		}
 
 	case 2:
-		{break; }
+		{
+			cv::Point p(ev->x(), ev->y());
+			subSelection(p, DNN::getInstance().combinedMask, DNN::getInstance().image);
+			cv::Mat proccesedImage = showSelection(DNN::getInstance().image, DNN::getInstance().combinedMask);
+			ui.imageArea->setImage(proccesedImage);
+			break;
+		}
 
 	default:
 		{break; }
