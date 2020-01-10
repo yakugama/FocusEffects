@@ -9,6 +9,7 @@
 #include <QPoint>
 
 #include "mask_rcnn.h"
+#include "BlurOperations.h"
 
 class FocusEffects : public QMainWindow
 {
@@ -31,5 +32,6 @@ private slots:
 	void processButton_clicked();
 	void addSelectionButton_clicked();
 	void subSelectionButton_clicked();
+	void blurButton_clicked();
 	void imageArea_clicked(QMouseEvent *ev);
 };

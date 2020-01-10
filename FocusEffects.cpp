@@ -9,6 +9,7 @@ FocusEffects::FocusEffects(QWidget *parent)
 	connect(ui.processButton, SIGNAL(clicked()), this, SLOT(processButton_clicked()));
 	connect(ui.addSelectionButton, SIGNAL(clicked()), this, SLOT(addSelectionButton_clicked()));
 	connect(ui.subSelectionButton, SIGNAL(clicked()), this, SLOT(subSelectionButton_clicked()));
+	connect(ui.blurButton, SIGNAL(clicked()), this, SLOT(blurButton_clicked()));
 	connect(ui.imageArea, SIGNAL(clicked(QMouseEvent *)), this, SLOT(imageArea_clicked(QMouseEvent *)));
 }
 
@@ -42,6 +43,12 @@ void FocusEffects::addSelectionButton_clicked()
 void FocusEffects::subSelectionButton_clicked()
 {
 	clickType = 2;
+}
+
+void FocusEffects::blurButton_clicked()
+{
+	cv::Mat img = imread(filename.toStdString(), IMREAD_COLOR);
+	ui.imageArea->setImage(applyMask(img, DNN::getInstance().combinedMask, 5));
 }
 
 void FocusEffects::imageArea_clicked(QMouseEvent* ev)

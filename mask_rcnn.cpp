@@ -1,10 +1,5 @@
 // Copyright (C) 2018-2019, BigVision LLC (LearnOpenCV.com), All Rights Reserved. 
 // Author : Sunita Nayak
-// Article : https://www.learnopencv.com/deep-learning-based-object-detection-and-instance-segmentation-using-mask-r-cnn-in-opencv-python-c/
-// License: BSD-3-Clause-Attribution (Please read the license file.)
-
-// Usage example:  ./mask_rcnn.out --video=run.mp4
-//                 ./mask_rcnn.out --image=bird.jpg
 
 #include "mask_rcnn.h"
 
@@ -90,8 +85,8 @@ void DNN::processImage(Rect rect)
 // For each frame, extract the bounding box and mask for each detected object
 void DNN::postprocess(const vector<Mat>& outs)
 {
-	int elementSizeX = selectedArea.width % 2 == 0 ? selectedArea.width / 20 + 1 : selectedArea.width / 20;
-	int elementSizeY = selectedArea.height % 2 == 0 ? selectedArea.height / 20 + 1 : selectedArea.height / 20;
+	int elementSizeX = selectedArea.width % 2 == 0 ? selectedArea.width / 15 + 1 : selectedArea.width / 15;
+	int elementSizeY = selectedArea.height % 2 == 0 ? selectedArea.height / 15 + 1 : selectedArea.height / 15;
 
 	Mat dilatationElement = getStructuringElement(MORPH_ELLIPSE, Size(elementSizeX, elementSizeY), Point(elementSizeX / 2, elementSizeY / 2));
 
